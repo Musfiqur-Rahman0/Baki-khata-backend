@@ -1,0 +1,19 @@
+model Transaction {
+    id         String          @id @default(cuid())
+    userId     String
+    customerId String
+    type       TransactionType
+    method     PaymentMethod?
+    amount     Float
+    note       String?
+    date       DateTime        @default(now())
+    createdAt  DateTime        @default(now())
+    updatedAt  DateTime        @updatedAt
+
+    user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+    @@index([customerId, date])
+    @@index([userId])
+    @@map("transactions")
+}
