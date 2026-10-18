@@ -73,24 +73,24 @@ export const AppErrors = {
   validation: (message: string, details?: unknown) =>
     createAppError(400, message, "VALIDATION_ERROR", details),
 
-  unauthorized: (message = "Authentication required") =>
+  unauthorized: (message = "অনুগ্রহ করে লগইন করুন") =>
     createAppError(401, message, "AUTHENTICATION_ERROR"),
 
-  forbidden: (message = "Access denied") =>
+  forbidden: (message = "এই কাজটি করার অনুমতি আপনার নেই") =>
     createAppError(403, message, "AUTHORIZATION_ERROR"),
 
-  notFound: (resource = "Resource") =>
-    createAppError(404, `${resource} not found`, "NOT_FOUND"),
+  notFound: (resource = "তথ্য") =>
+    createAppError(404, `${resource} পাওয়া যায়নি`, "NOT_FOUND"),
 
   conflict: (message: string, details?: unknown) =>
     createAppError(409, message, "CONFLICT", details),
 
-  database: (message = "Database operation failed", details?: unknown) =>
+  database: (message = "তথ্য সংরক্ষণে সমস্যা হয়েছে", details?: unknown) =>
     createAppError(500, message, "DATABASE_ERROR", details),
 
-  tooManyRequests: (message = "Too many requests") =>
+  tooManyRequests: (message = "অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।") =>
     createAppError(429, message, "RATE_LIMIT_ERROR"),
 
-  internal: (message = "An unexpected error occurred") =>
+  internal: (message = "একটি অপ্রত্যাশিত সমস্যা হয়েছে") =>
     createAppError(500, message, "INTERNAL_SERVER_ERROR"),
 };

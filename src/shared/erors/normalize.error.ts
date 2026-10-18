@@ -25,12 +25,10 @@ function normalizePrismaError(
 ): NormalizedError {
   switch (error.code) {
     case "P2002": {
-      const fields =
-        (error.meta?.target as string[] | undefined)?.join(", ") ?? "field";
       return {
         statusCode: 409,
         code: "CONFLICT",
-        message: `A record with this ${fields} already exists`,
+        message: "এই তথ্য দিয়ে ইতিমধ্যে একটি রেকর্ড রয়েছে",
         details: { fields: error.meta?.target },
         isOperational: true,
       };
@@ -39,7 +37,7 @@ function normalizePrismaError(
       return {
         statusCode: 400,
         code: "DATABASE_ERROR",
-        message: "Related record not found",
+        message: "সংশ্লিষ্ট তথ্য পাওয়া যায়নি",
         details: { field: error.meta?.field_name },
         isOperational: true,
       };
@@ -47,14 +45,14 @@ function normalizePrismaError(
       return {
         statusCode: 404,
         code: "NOT_FOUND",
-        message: "Record not found",
+        message: "তথ্য পাওয়া যায়নি",
         isOperational: true,
       };
     default:
       return {
         statusCode: 500,
         code: "DATABASE_ERROR",
-        message: "Database operation failed",
+        message: "তথ্য সংরক্ষণে সমস্যা হয়েছে",
         details:
           process.env.NODE_ENV === "development"
             ? { prismaCode: error.code }
@@ -70,7 +68,7 @@ function normalizePrismaValidationError(
   return {
     statusCode: 400,
     code: "VALIDATION_ERROR",
-    message: "Invalid data sent to database",
+    message: "তথ্য সঠিক নয়",
     details:
       process.env.NODE_ENV === "development"
         ? { hint: error.message.split("\n").slice(-1)[0] }
@@ -95,7 +93,7 @@ export function normalizeError(err: unknown): NormalizedError {
     return {
       statusCode: 400,
       code: "VALIDATION_ERROR",
-      message: "Invalid input",
+      message: "দেওয়া তথ্য সঠিক নয়",
       details: formatZodDetails(err),
       isOperational: true,
     };
@@ -113,7 +111,7 @@ export function normalizeError(err: unknown): NormalizedError {
     return {
       statusCode: 400,
       code: "VALIDATION_ERROR",
-      message: "Invalid JSON in request body",
+      message: "অনুরোধের তথ্য সঠিক JSON ফরম্যাটে নেই",
       isOperational: true,
     };
   }
@@ -122,7 +120,7 @@ export function normalizeError(err: unknown): NormalizedError {
     return {
       statusCode: 500,
       code: "INTERNAL_SERVER_ERROR",
-      message: "An unexpected error occurred",
+      message: "একটি অপ্রত্যাশিত সমস্যা হয়েছে",
       details:
         process.env.NODE_ENV === "development"
           ? { name: err.name, stack: err.stack }
@@ -134,7 +132,7 @@ export function normalizeError(err: unknown): NormalizedError {
   return {
     statusCode: 500,
     code: "INTERNAL_SERVER_ERROR",
-    message: "An unexpected error occurred",
+    message: "একটি অপ্রত্যাশিত সমস্যা হয়েছে",
     isOperational: false,
   };
 }

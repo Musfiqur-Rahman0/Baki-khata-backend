@@ -10,3 +10,12 @@ enum PaymentMethod {
     CARD
     OTHER
 }
+
+enum BusinessType {
+    GROCERY
+    PHARMACY
+    CLOTHING_TAILORING
+    ELECTRONICS
+    RESTAURANT_CAFE
+    OTHER
+}

@@ -3,17 +3,20 @@ import routeNotFoundHandler from "./middleware/notFoundHandler";
 import { errorHandler } from "./middleware/globalErrorHandler";
 import router from "./routes";
 import cors from "cors";
+import config from "./config/index.js";
 
 const app: Application = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.use(cors());
+app.use(
+  cors({
+    origin: config.FRONTEND_URL ?? "http://localhost:5173",
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (_req: Request, res: Response) => {
-  res.send("Hellow world!");
+  res.send("বাকি খাতা API চালু আছে");
 });
 
 app.use("/api/v1", router);

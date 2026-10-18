@@ -8,7 +8,7 @@ const routeNotFoundHandler = (
 ): void => {
   void req;
   void res;
-  next(AppErrors.notFound("Route"));
+  next(AppErrors.notFound("এই ঠিকানার পৃষ্ঠা"));
 };
 
 export default routeNotFoundHandler;
