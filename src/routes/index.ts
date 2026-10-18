@@ -1,5 +1,7 @@
 import { Router } from "express";
 import authRoutes from "../modules/auth/auth.routes.js";
+import customerRoutes from "../modules/customers/customer.routes.js";
+import transactionRoutes from "../modules/transactions/transaction.routes.js";
 
 const router = Router();
 
@@ -8,7 +10,11 @@ type TModuleRoute = {
   route: Router;
 };
 
-const moduleRoutes: TModuleRoute[] = [{ path: "/auth", route: authRoutes }];
+const moduleRoutes: TModuleRoute[] = [
+  { path: "/auth", route: authRoutes },
+  { path: "/customers", route: customerRoutes },
+  { path: "/transactions", route: transactionRoutes },
+];
 
 moduleRoutes.forEach((moduleRoute) => {
   router.use(moduleRoute.path, moduleRoute.route);

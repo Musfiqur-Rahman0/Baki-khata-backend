@@ -1,16 +1,19 @@
 model Customer {
-    id        String   @id @default(cuid())
-    userId    String
-    name      String
-    phone     String
-    note      String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    id          String   @id @default(cuid())
+    shopOwnerId String
+    name        String
+    phone       String
+    address     String?
+    note        String?
+    archivedAt  DateTime?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 
-    user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+    shopOwner    User          @relation(fields: [shopOwnerId], references: [id], onDelete: Cascade)
     transactions Transaction[]
 
-    @@unique([userId, phone])
-    @@index([userId])
+    @@unique([shopOwnerId, phone])
+    @@unique([id, shopOwnerId])
+    @@index([shopOwnerId])
     @@map("customers")
 }

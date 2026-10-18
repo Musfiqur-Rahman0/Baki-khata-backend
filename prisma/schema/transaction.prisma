@@ -1,19 +1,18 @@
 model Transaction {
     id         String          @id @default(cuid())
-    userId     String
+    shopOwnerId String
     customerId String
     type       TransactionType
-    method     PaymentMethod?
-    amount     Float
+    amount     Decimal         @db.Decimal(12, 2)
     note       String?
     date       DateTime        @default(now())
     createdAt  DateTime        @default(now())
     updatedAt  DateTime        @updatedAt
 
-    user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-    customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+    shopOwner User     @relation(fields: [shopOwnerId], references: [id], onDelete: Cascade)
+    customer  Customer @relation(fields: [customerId, shopOwnerId], references: [id, shopOwnerId], onDelete: Cascade)
 
     @@index([customerId, date])
-    @@index([userId])
+    @@index([shopOwnerId])
     @@map("transactions")
 }

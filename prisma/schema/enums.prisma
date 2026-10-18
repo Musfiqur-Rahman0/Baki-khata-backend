@@ -3,14 +3,6 @@ enum TransactionType {
     CREDIT
 }
 
-enum PaymentMethod {
-    CASH
-    BANK_TRANSFER
-    MOBILE_BANKING
-    CARD
-    OTHER
-}
-
 enum BusinessType {
     GROCERY
     PHARMACY
