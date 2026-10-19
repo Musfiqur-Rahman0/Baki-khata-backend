@@ -18,12 +18,26 @@ const apiLimiter = rateLimit({
   },
 });
 
+const allowedOrigins = [
+  "https://baki-khata-frontend-two.vercel.app",
+  "http://localhost:3000",
+];
+
 app.use(
   cors({
-    origin: config.FRONTEND_URL ?? "http://localhost:3000",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked origin: ${origin}`));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   }),
 );
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
