@@ -4,7 +4,7 @@ import { errorHandler } from "./middleware/globalErrorHandler";
 import router from "./routes";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
-import config from "./config/index.js";
+// import config from "./config/index.js";
 import { AppErrors } from "./shared/erors/app.errors.js";
 
 const app: Application = express();
