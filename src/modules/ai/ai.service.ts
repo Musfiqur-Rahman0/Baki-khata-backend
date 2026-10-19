@@ -11,7 +11,33 @@ function getGeminiConfig() {
     throw AppErrors.internal("AI সেবা চালু করতে .env ফাইলে GEMINI_API_KEY সেট করুন");
   }
   const model = process.env.GEMINI_MODEL?.trim() || DEFAULT_GEMINI_MODEL;
+  if (model.includes(",")) {
+    throw AppErrors.internal(
+      "GEMINI_MODEL-এ একবারে একটি model ID দিন; একাধিক model comma দিয়ে নয়, একটি model বেছে নিন",
+    );
+  }
   return { apiKey, model };
+}
+
+function getProviderError(payload: unknown): {
+  status?: string;
+  message?: string;
+} {
+  if (typeof payload !== "object" || payload === null || !("error" in payload)) {
+    return {};
+  }
+  const error = payload.error;
+  if (typeof error !== "object" || error === null) return {};
+  return {
+    status:
+      "status" in error && typeof error.status === "string"
+        ? error.status
+        : undefined,
+    message:
+      "message" in error && typeof error.message === "string"
+        ? error.message
+        : undefined,
+  };
 }
 
 function extractJson(text: string): unknown {
@@ -74,9 +100,43 @@ export async function parseNaturalLanguageTransaction(shopOwnerId: string, rawTe
   }
 
   if (!response.ok) {
-    // Do not expose the API key or provider response details to the client.
-    if (response.status === 429) throw AppErrors.tooManyRequests("AI request limit শেষ হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।");
-    throw AppErrors.internal("Gemini AI অনুরোধটি সম্পন্ন করতে পারেনি। API key, model এবং quota পরীক্ষা করুন।");
+    let providerPayload: unknown;
+    try {
+      providerPayload = await response.json();
+    } catch {
+      providerPayload = undefined;
+    }
+    const providerError = getProviderError(providerPayload);
+    console.error("[Gemini API error]", {
+      httpStatus: response.status,
+      providerStatus: providerError.status,
+      message: providerError.message,
+      model,
+    });
+
+    if (response.status === 429) {
+      throw AppErrors.tooManyRequests(
+        "Gemini API quota বা rate limit শেষ হয়েছে। Google AI Studio-তে quota পরীক্ষা করে কিছুক্ষণ পর আবার চেষ্টা করুন।",
+      );
+    }
+    if (response.status === 401 || response.status === 403) {
+      throw AppErrors.internal(
+        "Gemini API key সঠিক নয় অথবা এই API key-এর অনুমতি নেই। Render-এর GEMINI_API_KEY পরীক্ষা করুন।",
+      );
+    }
+    if (response.status === 404) {
+      throw AppErrors.internal(
+        `Gemini model "${model}" এই API key-তে পাওয়া যায়নি। GEMINI_MODEL-এ একটি উপলভ্য model ID দিন।`,
+      );
+    }
+    if (response.status === 400) {
+      throw AppErrors.internal(
+        "Gemini অনুরোধটি গ্রহণ করেনি। সার্ভারের Gemini model/configuration পরীক্ষা করুন।",
+      );
+    }
+    throw AppErrors.internal(
+      `Gemini API অনুরোধ ব্যর্থ হয়েছে (HTTP ${response.status})। সার্ভার লগ পরীক্ষা করুন।`,
+    );
   }
 
   const payload = (await response.json()) as {
