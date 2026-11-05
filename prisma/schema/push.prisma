@@ -1,0 +1,13 @@
+model PushSubscription {
+  id          String   @id @default(cuid())
+  shopOwnerId String
+  endpoint    String   @unique
+  p256dh      String
+  auth        String
+  createdAt   DateTime @default(now())
+
+  shopOwner User @relation(fields: [shopOwnerId], references: [id], onDelete: Cascade)
+
+  @@index([shopOwnerId])
+  @@map("push_subscriptions")
+}

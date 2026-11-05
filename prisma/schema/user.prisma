@@ -10,6 +10,7 @@ model User {
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
-  customers    Customer[]
-  transactions Transaction[]
+  customers         Customer[]
+  transactions      Transaction[]
+  pushSubscriptions PushSubscription[]
 }
