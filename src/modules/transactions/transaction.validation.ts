@@ -40,6 +40,8 @@ export const createTransactionSchema = z.object({
   date: z.iso.datetime({ offset: true }).optional(),
 });
 
+export const idempotencyKeySchema = z.uuid().optional();
+
 export const transactionIdParamsSchema = z.object({
   transactionId: z.string().trim().min(1, "লেনদেন আইডি দিতে হবে"),
 });

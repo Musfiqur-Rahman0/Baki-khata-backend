@@ -54,6 +54,23 @@ function serializeTransaction<T extends { amount: Prisma.Decimal }>(
   return { ...transaction, amount: transaction.amount.toFixed(2) };
 }
 
+function getIdempotentResult(
+  transaction: Prisma.TransactionGetPayload<{ select: typeof transactionSelect }>,
+  input: CreateTransactionInput,
+) {
+  const sameRequest =
+    transaction.customerId === input.customerId &&
+    transaction.type === input.type &&
+    transaction.amount.eq(input.amount) &&
+    (transaction.note ?? null) === (input.note ?? null) &&
+    (!input.date ||
+      transaction.date.getTime() === new Date(input.date).getTime());
+  if (!sameRequest) {
+    throw AppErrors.conflict("এই অনুরোধের আইডি অন্য লেনদেনে ব্যবহার হয়েছে");
+  }
+  return serializeTransaction(transaction);
+}
+
 function makeWhere(
   shopOwnerId: string,
   query: TransactionListQuery,
@@ -80,25 +97,50 @@ function makeWhere(
 export async function createTransaction(
   shopOwnerId: string,
   input: CreateTransactionInput,
+  idempotencyKey?: string,
 ) {
+  if (idempotencyKey) {
+    const existing = await prisma.transaction.findUnique({
+      where: { shopOwnerId_idempotencyKey: { shopOwnerId, idempotencyKey } },
+      select: transactionSelect,
+    });
+    if (existing) return getIdempotentResult(existing, input);
+  }
+
   const customer = await prisma.customer.findFirst({
     where: { id: input.customerId, shopOwnerId, archivedAt: null },
     select: { id: true },
   });
   if (!customer) throw AppErrors.notFound("সক্রিয় গ্রাহক");
 
-  const transaction = await prisma.transaction.create({
-    data: {
-      shopOwnerId,
-      customerId: customer.id,
-      type: input.type,
-      amount: input.amount,
-      note: input.note,
-      ...(input.date ? { date: new Date(input.date) } : {}),
-    },
-    select: transactionSelect,
-  });
-  return serializeTransaction(transaction);
+  try {
+    const transaction = await prisma.transaction.create({
+      data: {
+        shopOwnerId,
+        customerId: customer.id,
+        type: input.type,
+        amount: input.amount,
+        note: input.note,
+        ...(idempotencyKey ? { idempotencyKey } : {}),
+        ...(input.date ? { date: new Date(input.date) } : {}),
+      },
+      select: transactionSelect,
+    });
+    return serializeTransaction(transaction);
+  } catch (error) {
+    if (
+      idempotencyKey &&
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      const existing = await prisma.transaction.findUnique({
+        where: { shopOwnerId_idempotencyKey: { shopOwnerId, idempotencyKey } },
+        select: transactionSelect,
+      });
+      if (existing) return getIdempotentResult(existing, input);
+    }
+    throw error;
+  }
 }
 
 export async function listTransactions(

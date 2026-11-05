@@ -5,6 +5,7 @@ import * as transactionService from "./transaction.service.js";
 import {
   createTransactionSchema,
   customerLedgerParamsSchema,
+  idempotencyKeySchema,
   transactionIdParamsSchema,
   transactionListQuerySchema,
 } from "./transaction.validation.js";
@@ -13,6 +14,7 @@ export const create: RequestHandler = async (req, res) => {
   const transaction = await transactionService.createTransaction(
     requireShopOwnerId(req),
     createTransactionSchema.parse(req.body),
+    idempotencyKeySchema.parse(req.get("Idempotency-Key") || undefined),
   );
   return sendSuccess(res, transaction, 201);
 };

@@ -21,20 +21,54 @@ const apiLimiter = rateLimit({
 const allowedOrigins = [
   "https://baki-khata-frontend-two.vercel.app",
   "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "http://localhost:3001",
+  "http://127.0.0.1:3001",
 ];
+
+const isAllowedOrigin = (origin: string | undefined) => {
+  if (!origin) {
+    return true;
+  }
+
+  if (allowedOrigins.includes(origin)) {
+    return true;
+  }
+
+  try {
+    const url = new URL(origin);
+    const hostname = url.hostname;
+    const port = url.port || "80";
+    const localhostPorts = ["3000", "3001", "5173", "4173"];
+
+    return (
+      (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "0.0.0.0") &&
+      localhostPorts.includes(port)
+    );
+  } catch {
+    return false;
+  }
+};
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (isAllowedOrigin(origin)) {
         callback(null, true);
       } else {
         callback(new Error(`CORS blocked origin: ${origin}`));
       }
     },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Idempotency-Key",
+      "X-Requested-With",
+      "Accept",
+    ],
     credentials: true,
+    optionsSuccessStatus: 204,
   }),
 );
 
