@@ -3,6 +3,7 @@ import authRoutes from "../modules/auth/auth.routes.js";
 import customerRoutes from "../modules/customers/customer.routes.js";
 import transactionRoutes from "../modules/transactions/transaction.routes.js";
 import aiRoutes from "../modules/ai/ai.routes.js";
+import pushRoutes from "../modules/push/push.route.js";
 
 const router = Router();
 
@@ -16,6 +17,7 @@ const moduleRoutes: TModuleRoute[] = [
   { path: "/customers", route: customerRoutes },
   { path: "/transactions", route: transactionRoutes },
   { path: "/ai", route: aiRoutes },
+  { path: "/push", route: pushRoutes },
 ];
 
 moduleRoutes.forEach((moduleRoute) => {
